@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { Menu, QrCode, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import type { AuthUser } from "@/types/auth";
+import { useUser } from "@/hooks/use-auth";
 import { signOut } from "@/app/(auth)/actions";
 
 const NAV_ITEMS = [
@@ -23,10 +23,96 @@ const NAV_ITEMS = [
   { name: "Блог", href: "/blog" },
 ];
 
-export function Header() {
+const AuthButtonsSkeleton = () => (
+  <div className="flex items-center gap-2">
+    <Skeleton className="h-8 w-16 rounded" />
+    <Skeleton className="h-8 w-24 rounded-full" />
+  </div>
+);
+
+const AuthButtons = () => {
+  const { data: user, isLoading } = useUser();
+
+  if (isLoading) {
+    return <AuthButtonsSkeleton />;
+  }
+
+  if (user) {
+    return (
+      <>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard">
+            <User className="h-4 w-4 mr-2" />
+            Панель
+          </Link>
+        </Button>
+        <form action={signOut}>
+          <Button variant="outline" size="sm" className="rounded-full">
+            <LogOut className="h-4 w-4 mr-2" />
+            Выйти
+          </Button>
+        </form>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Button variant="ghost" size="sm" asChild>
+        <Link href="/login">Войти</Link>
+      </Button>
+      <Button variant="outline" size="sm" className="rounded-full" asChild>
+        <Link href="/register">Регистрация</Link>
+      </Button>
+    </>
+  );
+};
+
+const MobileAuthButtons = () => {
+  const { data: user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2 mb-4">
+        <Skeleton className="h-10 w-full rounded" />
+        <Skeleton className="h-10 w-full rounded" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return (
+      <>
+        <Button variant="outline" className="w-full justify-center" asChild>
+          <Link href="/dashboard">
+            <User className="h-4 w-4 mr-2" />
+            Панель
+          </Link>
+        </Button>
+        <form action={signOut} className="w-full">
+          <Button className="w-full justify-center bg-red-600 text-white">
+            <LogOut className="h-4 w-4 mr-2" />
+            Выйти
+          </Button>
+        </form>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Button variant="outline" className="w-full justify-center" asChild>
+        <Link href="/login">Войти</Link>
+      </Button>
+      <Button className="w-full justify-center bg-red-600 text-white" asChild>
+        <Link href="/register">Регистрация</Link>
+      </Button>
+    </>
+  );
+};
+
+export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,28 +121,6 @@ export function Header() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    async function getUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setIsLoading(false);
-    }
-
-    getUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -92,33 +156,9 @@ export function Header() {
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-2">
-            {isLoading ? (
-              <div className="h-8 w-20 bg-muted animate-pulse rounded" />
-            ) : user ? (
-              <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/dashboard">
-                    <User className="h-4 w-4 mr-2" />
-                    Панель
-                  </Link>
-                </Button>
-                <form action={signOut}>
-                  <Button variant="outline" size="sm" className="rounded-full">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Выйти
-                  </Button>
-                </form>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/login">Войти</Link>
-                </Button>
-                <Button variant="outline" size="sm" className="rounded-full" asChild>
-                  <Link href="/register">Регистрация</Link>
-                </Button>
-              </>
-            )}
+            <Suspense fallback={<AuthButtonsSkeleton />}>
+              <AuthButtons />
+            </Suspense>
           </div>
 
           <Sheet>
@@ -149,31 +189,14 @@ export function Header() {
                 ))}
                 <hr className="my-2 border-muted" />
                 <div className="flex flex-col gap-2 mb-4 text-lg">
-                  {user ? (
-                    <>
-                      <Button variant="outline" className="w-full justify-center" asChild>
-                        <Link href="/dashboard">
-                          <User className="h-4 w-4 mr-2" />
-                          Панель
-                        </Link>
-                      </Button>
-                      <form action={signOut} className="w-full">
-                        <Button className="w-full justify-center bg-red-600 text-white">
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Выйти
-                        </Button>
-                      </form>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" className="w-full justify-center" asChild>
-                        <Link href="/login">Войти</Link>
-                      </Button>
-                      <Button className="w-full justify-center bg-red-600 text-white" asChild>
-                        <Link href="/register">Регистрация</Link>
-                      </Button>
-                    </>
-                  )}
+                  <Suspense fallback={
+                    <div className="flex flex-col gap-2 mb-4">
+                      <Skeleton className="h-10 w-full rounded" />
+                      <Skeleton className="h-10 w-full rounded" />
+                    </div>
+                  }>
+                    <MobileAuthButtons />
+                  </Suspense>
                 </div>
               </div>
             </SheetContent>
@@ -182,4 +205,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+};

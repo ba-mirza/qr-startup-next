@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -14,72 +13,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
-import { login, signInWithGoogle } from "@/app/(auth)/actions";
+import { useLogin, useGoogleSignIn } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { GoogleIcon } from "./google-icon";
 
-export function LoginForm() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<LoginInput & { form: string }>>(
-    {}
-  );
+export const LoginForm = () => {
+  const login = useLogin();
+  const googleSignIn = useGoogleSignIn();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrors({});
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
+  const isPending = login.isPending || googleSignIn.isPending;
+  const serverError = login.error?.message || googleSignIn.error?.message || null;
 
-    const result = loginSchema.safeParse(data);
-
-    if (!result.success) {
-      const fieldErrors: Partial<LoginInput> = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof LoginInput;
-        fieldErrors[field] = issue.message;
-      });
-      setErrors(fieldErrors);
-      setIsLoading(false);
-      return;
-    }
-
-    const response = await login(formData);
-
-    if (response?.error) {
-      setErrors({ form: response.error });
-      setIsLoading(false);
-      return;
-    }
-
-    router.push("/dashboard");
-    router.refresh();
-  }
-
-  async function handleGoogleSignIn() {
-    setIsGoogleLoading(true);
-    setErrors({});
-
-    const response = await signInWithGoogle();
-
-    if (response?.error) {
-      setErrors({ form: response.error });
-      setIsGoogleLoading(false);
-      return;
-    }
-
-    if (response?.url) {
-      window.location.href = response.url;
-    }
-  }
+  const onSubmit = (data: LoginInput) => {
+    login.reset();
+    login.mutate(data);
+  };
 
   return (
     <Card>
@@ -93,10 +59,10 @@ export function LoginForm() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={handleGoogleSignIn}
-          disabled={isGoogleLoading || isLoading}
+          onClick={() => googleSignIn.mutate()}
+          disabled={isPending}
         >
-          {isGoogleLoading ? (
+          {googleSignIn.isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <GoogleIcon className="mr-2 h-4 w-4" />
@@ -115,49 +81,58 @@ export function LoginForm() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
               name="email"
-              type="email"
-              placeholder="name@example.com"
-              autoComplete="email"
-              disabled={isLoading || isGoogleLoading}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Пароль</Label>
-            <Input
-              id="password"
+
+            <FormField
+              control={form.control}
               name="password"
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              disabled={isLoading || isGoogleLoading}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Пароль</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password}</p>
+
+            {serverError && (
+              <p className="text-sm text-destructive text-center">{serverError}</p>
             )}
-          </div>
 
-          {errors.form && (
-            <p className="text-sm text-destructive text-center">{errors.form}</p>
-          )}
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading || isGoogleLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Войти
-          </Button>
-        </form>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {login.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Войти
+            </Button>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter>
         <p className="text-sm text-muted-foreground text-center w-full">
@@ -169,4 +144,4 @@ export function LoginForm() {
       </CardFooter>
     </Card>
   );
-}
+};

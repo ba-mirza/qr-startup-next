@@ -22,11 +22,11 @@ export interface RegisterCredentials {
 
 export interface AuthError {
   message: string;
-  code?: string;
+  code: string | null;
 }
 
 export interface AuthResponse {
   success: boolean;
-  error?: AuthError;
-  redirectTo?: string;
+  error: AuthError | null;
+  redirectTo: string | null;
 }
