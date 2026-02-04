@@ -35,14 +35,18 @@ export const updateSession = async (request: NextRequest) => {
 
   const protectedRoutes = ["/dashboard"];
   const authRoutes = ["/login", "/register"];
+  const pathname = request.nextUrl.pathname;
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
   );
 
   const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
   );
+
+  const isNewOrgPage = pathname === "/dashboard/new";
+  const isOrgSlugPage = pathname.startsWith("/dashboard/") && !isNewOrgPage && pathname !== "/dashboard";
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
@@ -54,6 +58,20 @@ export const updateSession = async (request: NextRequest) => {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  if (user && isOrgSlugPage) {
+    const { data: organization } = await supabase
+      .from("organizations")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!organization) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard/new";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
