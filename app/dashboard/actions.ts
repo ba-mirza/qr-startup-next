@@ -6,6 +6,7 @@ import { createOfficePointSchema, updateOrganizationSettingsSchema } from "@/lib
 import type { Organization, OrganizationWithOffices, OfficePoint, OrganizationSettings } from "@/types/organization";
 import type { RegistrationQR } from "@/types/registration-qr";
 import type { CheckLogWithRelations } from "@/types/check-log";
+import type { Employee, EmployeeStatus } from "@/types/employee";
 
 const generateSlug = (name: string): string => {
   const base = name
@@ -539,4 +540,203 @@ export const getTodayStats = async (
     data: { totalCheckIns, totalCheckOuts, uniqueEmployees },
     error: null,
   };
+};
+
+// Employee actions
+
+export const getEmployees = async (
+  organizationId: string,
+  status?: EmployeeStatus
+): Promise<{ data: Employee[]; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: [], error: "Не авторизован" };
+  }
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!org) {
+    return { data: [], error: "Организация не найдена" };
+  }
+
+  let query = supabase
+    .from("employees")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return { data: [], error: "Ошибка загрузки сотрудников" };
+  }
+
+  return { data: data as Employee[], error: null };
+};
+
+export const approveEmployee = async (
+  employeeId: string
+): Promise<{ success: boolean; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Не авторизован" };
+  }
+
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("id, organization_id, organizations!inner(user_id)")
+    .eq("id", employeeId)
+    .single();
+
+  if (!employee) {
+    return { success: false, error: "Сотрудник не найден" };
+  }
+
+  const { error } = await supabase
+    .from("employees")
+    .update({ status: "active", updated_at: new Date().toISOString() })
+    .eq("id", employeeId);
+
+  if (error) {
+    return { success: false, error: "Ошибка одобрения" };
+  }
+
+  return { success: true, error: null };
+};
+
+export const rejectEmployee = async (
+  employeeId: string
+): Promise<{ success: boolean; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Не авторизован" };
+  }
+
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("id, organization_id, organizations!inner(user_id)")
+    .eq("id", employeeId)
+    .single();
+
+  if (!employee) {
+    return { success: false, error: "Сотрудник не найден" };
+  }
+
+  const { error } = await supabase
+    .from("employees")
+    .delete()
+    .eq("id", employeeId);
+
+  if (error) {
+    return { success: false, error: "Ошибка отклонения" };
+  }
+
+  return { success: true, error: null };
+};
+
+export const updateEmployeeStatus = async (
+  employeeId: string,
+  status: EmployeeStatus
+): Promise<{ success: boolean; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Не авторизован" };
+  }
+
+  const { error } = await supabase
+    .from("employees")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", employeeId);
+
+  if (error) {
+    return { success: false, error: "Ошибка обновления статуса" };
+  }
+
+  return { success: true, error: null };
+};
+
+export const updateEmployee = async (
+  employeeId: string,
+  data: { full_name?: string; position?: string; phone?: string; email?: string }
+): Promise<{ data: Employee | null; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "Не авторизован" };
+  }
+
+  const { data: updated, error } = await supabase
+    .from("employees")
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq("id", employeeId)
+    .select()
+    .single();
+
+  if (error) {
+    return { data: null, error: "Ошибка обновления" };
+  }
+
+  return { data: updated as Employee, error: null };
+};
+
+export const getEmployeesCount = async (
+  organizationId: string
+): Promise<{ total: number; pending: number; active: number; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { total: 0, pending: 0, active: 0, error: "Не авторизован" };
+  }
+
+  const { data, error } = await supabase
+    .from("employees")
+    .select("status")
+    .eq("organization_id", organizationId);
+
+  if (error) {
+    return { total: 0, pending: 0, active: 0, error: "Ошибка загрузки" };
+  }
+
+  const total = data.length;
+  const pending = data.filter((e) => e.status === "pending").length;
+  const active = data.filter((e) => e.status === "active").length;
+
+  return { total, pending, active, error: null };
 };

@@ -12,6 +12,7 @@ import {
   OrganizationSettingsSection,
 } from "@/components/features/settings";
 import { LogsSection } from "@/components/features/logs";
+import { EmployeesSection } from "@/components/features/employees";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useOrganizationBySlug } from "@/hooks/use-organization";
@@ -121,11 +122,15 @@ const OrgDashboardPage = () => {
 
         <TabsContent value="employees">
           <Container>
-            <section className="mt-10 pt-16">
-              <h1 className="text-2xl font-bold mb-4">Таблица сотрудников</h1>
-              <p className="text-gray-600">
-                Здесь будет таблица сотрудников организации.
-              </p>
+            <section className="mt-10 pt-16 space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Сотрудники</h1>
+                <p className="text-muted-foreground">
+                  Управление сотрудниками и модерация заявок
+                </p>
+              </div>
+
+              <EmployeesSection organizationId={organization.id} />
             </section>
           </Container>
         </TabsContent>
