@@ -5,6 +5,7 @@ import { createOrganizationSchema } from "@/lib/validations/organization";
 import { createOfficePointSchema, updateOrganizationSettingsSchema } from "@/lib/validations/office-point";
 import type { Organization, OrganizationWithOffices, OfficePoint, OrganizationSettings } from "@/types/organization";
 import type { RegistrationQR } from "@/types/registration-qr";
+import type { CheckLogWithRelations } from "@/types/check-log";
 
 const generateSlug = (name: string): string => {
   const base = name
@@ -412,4 +413,130 @@ export const updateOrganizationSettings = async (
   }
 
   return { success: true, error: null };
+};
+
+export const getCheckLogs = async (
+  organizationId: string,
+  options?: {
+    date?: string;
+    employeeId?: string;
+    officePointId?: string;
+    checkType?: "check_in" | "check_out";
+    limit?: number;
+    offset?: number;
+  }
+): Promise<{ data: CheckLogWithRelations[]; total: number; error: string | null }> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: [], total: 0, error: "Не авторизован" };
+  }
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!org) {
+    return { data: [], total: 0, error: "Организация не найдена" };
+  }
+
+  let query = supabase
+    .from("check_logs")
+    .select(`
+      *,
+      employee:employees!inner(id, full_name, position, organization_id),
+      office_point:office_points!inner(id, name, organization_id)
+    `, { count: "exact" })
+    .eq("employee.organization_id", organizationId)
+    .order("checked_at", { ascending: false });
+
+  if (options?.date) {
+    const startOfDay = `${options.date}T00:00:00`;
+    const endOfDay = `${options.date}T23:59:59`;
+    query = query.gte("checked_at", startOfDay).lte("checked_at", endOfDay);
+  }
+
+  if (options?.employeeId) {
+    query = query.eq("employee_id", options.employeeId);
+  }
+
+  if (options?.officePointId) {
+    query = query.eq("office_point_id", options.officePointId);
+  }
+
+  if (options?.checkType) {
+    query = query.eq("check_type", options.checkType);
+  }
+
+  const limit = options?.limit || 50;
+  const offset = options?.offset || 0;
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    return { data: [], total: 0, error: "Ошибка загрузки логов" };
+  }
+
+  return {
+    data: data as CheckLogWithRelations[],
+    total: count || 0,
+    error: null,
+  };
+};
+
+export const getTodayStats = async (
+  organizationId: string
+): Promise<{
+  data: {
+    totalCheckIns: number;
+    totalCheckOuts: number;
+    uniqueEmployees: number;
+  } | null;
+  error: string | null;
+}> => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "Не авторизован" };
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const startOfDay = `${today}T00:00:00`;
+  const endOfDay = `${today}T23:59:59`;
+
+  const { data: logs, error } = await supabase
+    .from("check_logs")
+    .select(`
+      check_type,
+      employee_id,
+      employee:employees!inner(organization_id)
+    `)
+    .eq("employee.organization_id", organizationId)
+    .gte("checked_at", startOfDay)
+    .lte("checked_at", endOfDay);
+
+  if (error) {
+    return { data: null, error: "Ошибка загрузки статистики" };
+  }
+
+  const totalCheckIns = logs.filter((l) => l.check_type === "check_in").length;
+  const totalCheckOuts = logs.filter((l) => l.check_type === "check_out").length;
+  const uniqueEmployees = new Set(logs.map((l) => l.employee_id)).size;
+
+  return {
+    data: { totalCheckIns, totalCheckOuts, uniqueEmployees },
+    error: null,
+  };
 };

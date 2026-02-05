@@ -11,6 +11,7 @@ import {
   RegistrationQRSection,
   OrganizationSettingsSection,
 } from "@/components/features/settings";
+import { LogsSection } from "@/components/features/logs";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useOrganizationBySlug } from "@/hooks/use-organization";
@@ -131,11 +132,18 @@ const OrgDashboardPage = () => {
 
         <TabsContent value="logs">
           <Container>
-            <section className="mt-10 pt-16">
-              <h1 className="text-2xl font-bold mb-4">Онлайн логи</h1>
-              <p className="text-gray-600">
-                Здесь будут отображаться логи посещений в реальном времени.
-              </p>
+            <section className="mt-10 pt-16 space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Логи посещений</h1>
+                <p className="text-muted-foreground">
+                  История отметок сотрудников в реальном времени
+                </p>
+              </div>
+
+              <LogsSection
+                organizationId={organization.id}
+                officePoints={organization.office_points || []}
+              />
             </section>
           </Container>
         </TabsContent>
