@@ -39,6 +39,7 @@ export const CreateOrganizationDialog = ({ disabled = false }: CreateOrganizatio
     defaultValues: {
       name: "",
       bin: "",
+      address: "",
     },
   });
 
@@ -74,7 +75,7 @@ export const CreateOrganizationDialog = ({ disabled = false }: CreateOrganizatio
         <DialogHeader>
           <DialogTitle>Новая организация</DialogTitle>
           <DialogDescription>
-            Заполните данные для создания организации
+            Заполните данные для создания организации. Главный офис будет создан автоматически.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -107,6 +108,24 @@ export const CreateOrganizationDialog = ({ disabled = false }: CreateOrganizatio
                     <Input
                       placeholder="123456789012"
                       maxLength={12}
+                      disabled={createOrg.isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Адрес главного офиса</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="г. Алматы, ул. Абая 1, офис 100"
                       disabled={createOrg.isPending}
                       {...field}
                     />
