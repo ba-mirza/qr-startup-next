@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { RefreshCw, ChevronLeft, ChevronRight, Radio } from "lucide-react";
 import { useCheckLogs } from "@/hooks/use-logs";
+import { useRealtimeLogs } from "@/hooks/use-realtime-logs";
 import { LogsTable } from "./logs-table";
 import { LogsFilters } from "./logs-filters";
 import type { OfficePoint } from "@/types/organization";
-import type { CheckType } from "@/types/check-log";
+import type { CheckType, CheckLogWithRelations } from "@/types/check-log";
 
 interface LogsSectionProps {
   organizationId: string;
@@ -22,6 +24,7 @@ export const LogsSection = ({ organizationId, officePoints }: LogsSectionProps) 
   const [checkType, setCheckType] = useState<CheckType | "all">("all");
   const [officePointId, setOfficePointId] = useState("all");
   const [page, setPage] = useState(0);
+  const [realtimeLogs, setRealtimeLogs] = useState<CheckLogWithRelations[]>([]);
 
   const { data, isLoading, refetch, isFetching } = useCheckLogs(organizationId, {
     date: date || undefined,
@@ -31,19 +34,44 @@ export const LogsSection = ({ organizationId, officePoints }: LogsSectionProps) 
     offset: page * ITEMS_PER_PAGE,
   });
 
+  const handleNewLog = useCallback((log: CheckLogWithRelations) => {
+    // Add new log to the top of realtime logs (only on first page with no filters)
+    if (page === 0 && !date && checkType === "all" && officePointId === "all") {
+      setRealtimeLogs((prev) => [log, ...prev].slice(0, 5));
+    }
+  }, [page, date, checkType, officePointId]);
+
+  const { isConnected, newLogsCount, resetNewLogsCount } = useRealtimeLogs({
+    organizationId,
+    onNewLog: handleNewLog,
+  });
+
   const logs = data?.logs || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // Merge realtime logs with fetched logs, avoiding duplicates
+  const displayLogs = page === 0 && !date && checkType === "all" && officePointId === "all"
+    ? [...realtimeLogs.filter((rl) => !logs.some((l) => l.id === rl.id)), ...logs].slice(0, ITEMS_PER_PAGE)
+    : logs;
 
   const handleReset = () => {
     setDate("");
     setCheckType("all");
     setOfficePointId("all");
     setPage(0);
+    setRealtimeLogs([]);
   };
 
   const handleFilterChange = () => {
     setPage(0);
+    setRealtimeLogs([]);
+  };
+
+  const handleRefresh = () => {
+    setRealtimeLogs([]);
+    resetNewLogsCount();
+    refetch();
   };
 
   return (
@@ -69,15 +97,32 @@ export const LogsSection = ({ organizationId, officePoints }: LogsSectionProps) 
           onReset={handleReset}
         />
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
-          Обновить
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Radio
+              className={`h-4 w-4 ${isConnected ? "text-green-600" : "text-muted-foreground"}`}
+            />
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              {isConnected ? "Онлайн" : "Офлайн"}
+            </span>
+          </div>
+
+          {newLogsCount > 0 && (
+            <Badge variant="secondary" className="animate-pulse">
+              +{newLogsCount} новых
+            </Badge>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isFetching}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Обновить
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -90,7 +135,7 @@ export const LogsSection = ({ organizationId, officePoints }: LogsSectionProps) 
         </div>
       ) : (
         <>
-          <LogsTable logs={logs} />
+          <LogsTable logs={displayLogs} />
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between">

@@ -89,7 +89,7 @@ const OrgDashboardPage = () => {
       <main>
         <TabsContent value="overview">
           <Container>
-            <section className="mt-10 pt-16">
+            <section className="mt-10 pt-16 pb-16">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold text-red-600">
@@ -122,7 +122,7 @@ const OrgDashboardPage = () => {
 
         <TabsContent value="employees">
           <Container>
-            <section className="mt-10 pt-16 space-y-6">
+            <section className="mt-10 pt-16 pb-16 space-y-6">
               <div>
                 <h1 className="text-2xl font-bold mb-2">Сотрудники</h1>
                 <p className="text-muted-foreground">
@@ -137,7 +137,7 @@ const OrgDashboardPage = () => {
 
         <TabsContent value="logs">
           <Container>
-            <section className="mt-10 pt-16 space-y-6">
+            <section className="mt-10 pt-16 pb-16 space-y-6">
               <div>
                 <h1 className="text-2xl font-bold mb-2">Логи посещений</h1>
                 <p className="text-muted-foreground">
@@ -155,7 +155,7 @@ const OrgDashboardPage = () => {
 
         <TabsContent value="settings">
           <Container>
-            <section className="mt-10 pt-16 space-y-8">
+            <section className="mt-10 pt-16 pb-16 space-y-8">
               <div>
                 <h1 className="text-2xl font-bold mb-2">Настройки</h1>
                 <p className="text-muted-foreground">

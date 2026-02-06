@@ -23,7 +23,7 @@ const NewOrganizationPage = () => {
     <>
       <DashboardHeaderSimple />
       <Container>
-        <section className="mt-10 pt-16">
+        <section className="mt-10 pt-16 pb-16">
           <h1 className="text-2xl font-bold text-red-600">Мои организации</h1>
 
           <div className="border-gray-300 border w-full h-auto rounded-lg p-4 bg-gray-50 flex flex-col justify-center mt-2">
