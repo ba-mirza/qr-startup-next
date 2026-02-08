@@ -12,7 +12,6 @@ import {
 } from "@/app/dashboard/actions";
 import type { CreateOfficePointInput } from "@/lib/validations/office-point";
 import type { OrganizationSettings } from "@/types/organization";
-import type { TimePeriod } from "@/types/registration-qr";
 
 const OFFICE_POINTS_KEY = ["office-points"];
 const REGISTRATION_QR_KEY = ["registration-qr"];
@@ -69,24 +68,24 @@ export const useRegenerateOfficePointQR = () => {
   });
 };
 
-export const useRegistrationQRCodes = (organizationId: string) => {
+export const useRegistrationQRCodes = (officePointId: string) => {
   return useQuery({
-    queryKey: [...REGISTRATION_QR_KEY, organizationId],
+    queryKey: [...REGISTRATION_QR_KEY, officePointId],
     queryFn: async () => {
-      const result = await getRegistrationQRCodes(organizationId);
+      const result = await getRegistrationQRCodes(officePointId);
       if (result.error) throw new Error(result.error);
       return result.data;
     },
-    enabled: !!organizationId,
+    enabled: !!officePointId,
   });
 };
 
-export const useCreateRegistrationQR = (organizationId: string) => {
+export const useCreateRegistrationQR = (officePointId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (timePeriod: TimePeriod) => {
-      const result = await createRegistrationQR(organizationId, timePeriod);
+    mutationFn: async (expiresInHours: number) => {
+      const result = await createRegistrationQR(officePointId, expiresInHours);
       if (result.error) throw new Error(result.error);
       return result.data;
     },

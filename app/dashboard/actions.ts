@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createOrganizationSchema } from "@/lib/validations/organization";
 import { createOfficePointSchema, updateOrganizationSettingsSchema } from "@/lib/validations/office-point";
 import type { Organization, OrganizationWithOffices, OfficePoint, OrganizationSettings } from "@/types/organization";
-import type { RegistrationQR, TimePeriod } from "@/types/registration-qr";
+import type { RegistrationQR } from "@/types/registration-qr";
 import type { CheckLogWithRelations } from "@/types/check-log";
 import type { Employee, EmployeeStatus } from "@/types/employee";
 
@@ -285,20 +285,9 @@ export const regenerateOfficePointQR = async (
   return { data: data as OfficePoint, error: null };
 };
 
-const timePeriodToHours = (period: TimePeriod): number => {
-  const mapping: Record<TimePeriod, number> = {
-    "1h": 1,
-    "6h": 6,
-    "24h": 24,
-    "3day": 72,
-    "7day": 168,
-  };
-  return mapping[period];
-};
-
 export const createRegistrationQR = async (
-  organizationId: string,
-  timePeriod: TimePeriod
+  officePointId: string,
+  expiresInHours: number
 ): Promise<{ data: RegistrationQR | null; error: string | null }> => {
   const supabase = await createClient();
 
@@ -310,29 +299,28 @@ export const createRegistrationQR = async (
     return { data: null, error: "Не авторизован" };
   }
 
-  const { data: org } = await supabase
-    .from("organizations")
-    .select("id")
-    .eq("id", organizationId)
-    .eq("user_id", user.id)
+  // Verify office point belongs to user's organization
+  const { data: officePoint } = await supabase
+    .from("office_points")
+    .select("id, organization_id, organizations!inner(user_id)")
+    .eq("id", officePointId)
     .single();
 
-  if (!org) {
-    return { data: null, error: "Организация не найдена" };
+  if (!officePoint) {
+    return { data: null, error: "Офисная точка не найдена" };
   }
 
   const token = generateQrToken();
   const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + timePeriodToHours(timePeriod));
+  expiresAt.setHours(expiresAt.getHours() + expiresInHours);
 
   const { data, error } = await supabase
     .from("registration_qr_codes")
     .insert({
-      organization_id: organizationId,
+      office_point_id: officePointId,
       token,
       expires_at: expiresAt.toISOString(),
       is_active: true,
-      time_period: timePeriod,
     })
     .select()
     .single();
@@ -345,7 +333,7 @@ export const createRegistrationQR = async (
 };
 
 export const getRegistrationQRCodes = async (
-  organizationId: string
+  officePointId: string
 ): Promise<{ data: RegistrationQR[]; error: string | null }> => {
   const supabase = await createClient();
 
@@ -360,7 +348,7 @@ export const getRegistrationQRCodes = async (
   const { data, error } = await supabase
     .from("registration_qr_codes")
     .select("*")
-    .eq("organization_id", organizationId)
+    .eq("office_point_id", officePointId)
     .order("created_at", { ascending: false });
 
   if (error) {

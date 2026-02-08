@@ -188,8 +188,8 @@ const OrgDashboardPage = () => {
               <Separator />
 
               <RegistrationQRSection
-                organizationId={organization.id}
                 organizationName={organization.name}
+                officePoints={organization.office_points || []}
               />
 
               <Separator />

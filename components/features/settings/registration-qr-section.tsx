@@ -32,11 +32,12 @@ import {
   useCreateRegistrationQR,
   useDeactivateRegistrationQR,
 } from "@/hooks/use-settings";
-import type { RegistrationQR, TimePeriod } from "@/types/registration-qr";
+import type { RegistrationQR } from "@/types/registration-qr";
+import type { OfficePoint } from "@/types/organization";
 
 interface RegistrationQRSectionProps {
-  organizationId: string;
   organizationName: string;
+  officePoints: OfficePoint[];
 }
 
 interface QRData {
@@ -181,18 +182,21 @@ const RegistrationQRCard = ({
 };
 
 export const RegistrationQRSection = ({
-  organizationId,
   organizationName,
+  officePoints,
 }: RegistrationQRSectionProps) => {
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
+  const [expiresIn, setExpiresIn] = useState("24");
+  const [selectedOfficeId, setSelectedOfficeId] = useState(officePoints[0]?.id || "");
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: qrCodes = [], isLoading } = useRegistrationQRCodes(organizationId);
-  const createQR = useCreateRegistrationQR(organizationId);
+  const { data: qrCodes = [], isLoading } = useRegistrationQRCodes(selectedOfficeId);
+  const createQR = useCreateRegistrationQR(selectedOfficeId);
   const deactivateQR = useDeactivateRegistrationQR();
 
+  const selectedOffice = officePoints.find((op) => op.id === selectedOfficeId);
+
   const handleCreate = () => {
-    createQR.mutate(timePeriod, {
+    createQR.mutate(parseInt(expiresIn), {
       onSuccess: () => {
         setCreateOpen(false);
       },
@@ -204,63 +208,77 @@ export const RegistrationQRSection = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold">QR-коды регистрации</h3>
           <p className="text-sm text-muted-foreground">
             Временные QR для добавления новых сотрудников
           </p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Создать QR
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Новый QR-код регистрации</DialogTitle>
-              <DialogDescription>
-                Сотрудники смогут зарегистрироваться, отсканировав этот QR
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Срок действия</label>
-                <Select value={timePeriod} onValueChange={(v) => setTimePeriod(v as TimePeriod)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1h">1 час</SelectItem>
-                    <SelectItem value="6h">6 часов</SelectItem>
-                    <SelectItem value="24h">24 часа</SelectItem>
-                    <SelectItem value="3day">3 дня</SelectItem>
-                    <SelectItem value="7day">7 дней</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {createQR.error && (
-                <p className="text-sm text-destructive text-center">
-                  {createQR.error.message}
-                </p>
-              )}
-
-              <Button
-                onClick={handleCreate}
-                className="w-full"
-                disabled={createQR.isPending}
-              >
-                {createQR.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Создать
+        <div className="flex items-center gap-3">
+          <Select value={selectedOfficeId} onValueChange={setSelectedOfficeId}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Выберите точку" />
+            </SelectTrigger>
+            <SelectContent>
+              {officePoints.map((op) => (
+                <SelectItem key={op.id} value={op.id}>
+                  {op.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button disabled={!selectedOfficeId}>
+                <Plus className="h-4 w-4 mr-2" />
+                Создать QR
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Новый QR-код регистрации</DialogTitle>
+                <DialogDescription>
+                  Сотрудники смогут зарегистрироваться в точке "{selectedOffice?.name}"
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Срок действия</label>
+                  <Select value={expiresIn} onValueChange={setExpiresIn}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 час</SelectItem>
+                      <SelectItem value="6">6 часов</SelectItem>
+                      <SelectItem value="24">24 часа</SelectItem>
+                      <SelectItem value="72">3 дня</SelectItem>
+                      <SelectItem value="168">7 дней</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {createQR.error && (
+                  <p className="text-sm text-destructive text-center">
+                    {createQR.error.message}
+                  </p>
+                )}
+
+                <Button
+                  onClick={handleCreate}
+                  className="w-full"
+                  disabled={createQR.isPending}
+                >
+                  {createQR.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Создать
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (
