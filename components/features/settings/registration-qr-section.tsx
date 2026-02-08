@@ -32,7 +32,7 @@ import {
   useCreateRegistrationQR,
   useDeactivateRegistrationQR,
 } from "@/hooks/use-settings";
-import type { RegistrationQR } from "@/types/registration-qr";
+import type { RegistrationQR, TimePeriod } from "@/types/registration-qr";
 
 interface RegistrationQRSectionProps {
   organizationId: string;
@@ -184,7 +184,7 @@ export const RegistrationQRSection = ({
   organizationId,
   organizationName,
 }: RegistrationQRSectionProps) => {
-  const [expiresIn, setExpiresIn] = useState("24");
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data: qrCodes = [], isLoading } = useRegistrationQRCodes(organizationId);
@@ -192,7 +192,7 @@ export const RegistrationQRSection = ({
   const deactivateQR = useDeactivateRegistrationQR();
 
   const handleCreate = () => {
-    createQR.mutate(parseInt(expiresIn), {
+    createQR.mutate(timePeriod, {
       onSuccess: () => {
         setCreateOpen(false);
       },
@@ -228,16 +228,16 @@ export const RegistrationQRSection = ({
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Срок действия</label>
-                <Select value={expiresIn} onValueChange={setExpiresIn}>
+                <Select value={timePeriod} onValueChange={(v) => setTimePeriod(v as TimePeriod)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 час</SelectItem>
-                    <SelectItem value="6">6 часов</SelectItem>
-                    <SelectItem value="24">24 часа</SelectItem>
-                    <SelectItem value="72">3 дня</SelectItem>
-                    <SelectItem value="168">7 дней</SelectItem>
+                    <SelectItem value="1h">1 час</SelectItem>
+                    <SelectItem value="6h">6 часов</SelectItem>
+                    <SelectItem value="24h">24 часа</SelectItem>
+                    <SelectItem value="3day">3 дня</SelectItem>
+                    <SelectItem value="7day">7 дней</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -12,6 +12,7 @@ import {
 } from "@/app/dashboard/actions";
 import type { CreateOfficePointInput } from "@/lib/validations/office-point";
 import type { OrganizationSettings } from "@/types/organization";
+import type { TimePeriod } from "@/types/registration-qr";
 
 const OFFICE_POINTS_KEY = ["office-points"];
 const REGISTRATION_QR_KEY = ["registration-qr"];
@@ -84,8 +85,8 @@ export const useCreateRegistrationQR = (organizationId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (expiresInHours: number) => {
-      const result = await createRegistrationQR(organizationId, expiresInHours);
+    mutationFn: async (timePeriod: TimePeriod) => {
+      const result = await createRegistrationQR(organizationId, timePeriod);
       if (result.error) throw new Error(result.error);
       return result.data;
     },
