@@ -64,14 +64,7 @@ export const LogsTable = ({ logs }: LogsTableProps) => {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex flex-col">
-                  <span className="font-medium">{log.employee.full_name}</span>
-                  {log.employee.position && (
-                    <span className="text-xs text-muted-foreground">
-                      {log.employee.position}
-                    </span>
-                  )}
-                </div>
+                <span className="font-medium">{log.employee.full_name}</span>
               </TableCell>
               <TableCell>
                 {log.check_type === "check_in" ? (

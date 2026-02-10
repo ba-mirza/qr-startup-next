@@ -14,7 +14,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -29,8 +28,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, UserCheck, UserX, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useUpdateEmployeeStatus } from "@/hooks/use-employees";
-import type { Employee, EmployeeStatus } from "@/types/employee";
+import { useToggleEmployeeActive } from "@/hooks/use-employees";
+import type { Employee } from "@/types/employee";
 
 interface EmployeesTableProps {
   employees: Employee[];
@@ -44,25 +43,13 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const statusLabels: Record<EmployeeStatus, string> = {
-  pending: "Ожидает",
-  active: "Активен",
-  inactive: "Неактивен",
-};
-
-const statusVariants: Record<EmployeeStatus, "default" | "secondary" | "destructive"> = {
-  pending: "secondary",
-  active: "default",
-  inactive: "destructive",
-};
-
 const EmployeeRow = ({ employee }: { employee: Employee }) => {
   const [confirmAction, setConfirmAction] = useState<"activate" | "deactivate" | null>(null);
-  const updateStatus = useUpdateEmployeeStatus();
+  const toggleActive = useToggleEmployeeActive();
 
-  const handleStatusChange = (newStatus: EmployeeStatus) => {
-    updateStatus.mutate(
-      { employeeId: employee.id, status: newStatus },
+  const handleToggle = (isActive: boolean) => {
+    toggleActive.mutate(
+      { employeeId: employee.id, isActive },
       { onSuccess: () => setConfirmAction(null) }
     );
   };
@@ -71,12 +58,7 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
     <>
       <TableRow>
         <TableCell>
-          <div className="flex flex-col">
-            <span className="font-medium">{employee.full_name}</span>
-            {employee.position && (
-              <span className="text-xs text-muted-foreground">{employee.position}</span>
-            )}
-          </div>
+          <span className="font-medium">{employee.full_name}</span>
         </TableCell>
         <TableCell className="hidden md:table-cell">
           {employee.phone || "—"}
@@ -85,8 +67,8 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
           {employee.email || "—"}
         </TableCell>
         <TableCell>
-          <Badge variant={statusVariants[employee.status]}>
-            {statusLabels[employee.status]}
+          <Badge variant={employee.is_active ? "default" : "secondary"}>
+            {employee.is_active ? "Активен" : "Неактивен"}
           </Badge>
         </TableCell>
         <TableCell className="hidden sm:table-cell text-muted-foreground">
@@ -100,22 +82,18 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {employee.status !== "active" && (
+              {!employee.is_active && (
                 <DropdownMenuItem onClick={() => setConfirmAction("activate")}>
                   <UserCheck className="h-4 w-4 mr-2" />
                   Активировать
                 </DropdownMenuItem>
               )}
-              {employee.status === "active" && (
+              {employee.is_active && (
                 <DropdownMenuItem onClick={() => setConfirmAction("deactivate")}>
                   <UserX className="h-4 w-4 mr-2" />
                   Деактивировать
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                Редактировать
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
@@ -136,10 +114,10 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleStatusChange(confirmAction === "activate" ? "active" : "inactive")}
-              disabled={updateStatus.isPending}
+              onClick={() => handleToggle(confirmAction === "activate")}
+              disabled={toggleActive.isPending}
             >
-              {updateStatus.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {toggleActive.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {confirmAction === "activate" ? "Активировать" : "Деактивировать"}
             </AlertDialogAction>
           </AlertDialogFooter>

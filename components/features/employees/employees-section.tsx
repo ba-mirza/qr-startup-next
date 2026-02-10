@@ -15,23 +15,22 @@ import { useEmployees } from "@/hooks/use-employees";
 import { EmployeesTable } from "./employees-table";
 import { PendingEmployees } from "./pending-employees";
 import { Separator } from "@/components/ui/separator";
-import type { EmployeeStatus } from "@/types/employee";
 
 interface EmployeesSectionProps {
   organizationId: string;
 }
 
-type FilterStatus = EmployeeStatus | "all";
+type FilterStatus = "all" | "active" | "inactive";
 
 export const EmployeesSection = ({ organizationId }: EmployeesSectionProps) => {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
 
+  const isActiveFilter = statusFilter === "all" ? undefined : statusFilter === "active";
+
   const { data: employees = [], isLoading, refetch, isFetching } = useEmployees(
     organizationId,
-    statusFilter === "all" ? undefined : statusFilter
+    isActiveFilter
   );
-
-  const activeEmployees = employees.filter((e) => e.status !== "pending");
 
   return (
     <div className="space-y-6">
@@ -58,7 +57,6 @@ export const EmployeesSection = ({ organizationId }: EmployeesSectionProps) => {
                 <SelectItem value="all">Все статусы</SelectItem>
                 <SelectItem value="active">Активные</SelectItem>
                 <SelectItem value="inactive">Неактивные</SelectItem>
-                <SelectItem value="pending">Ожидающие</SelectItem>
               </SelectContent>
             </Select>
 
@@ -81,9 +79,7 @@ export const EmployeesSection = ({ organizationId }: EmployeesSectionProps) => {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <EmployeesTable
-            employees={statusFilter === "all" ? activeEmployees : employees}
-          />
+          <EmployeesTable employees={employees} />
         )}
       </div>
     </div>

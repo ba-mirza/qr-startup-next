@@ -18,7 +18,7 @@ export interface CheckLog {
 }
 
 export interface CheckLogWithRelations extends CheckLog {
-  employee: Pick<Employee, "id" | "full_name" | "position">;
+  employee: Pick<Employee, "id" | "full_name">;
   office_point: Pick<OfficePoint, "id" | "name">;
 }
 
