@@ -71,10 +71,13 @@ pnpm build    # сборка + проверка типов — должна пр
 
 ## Известные проблемы (не повторять, а по возможности чинить)
 
-- Часть мутаций (`toggleEmployeeActive`, `deleteEmployee`, `regenerateOfficePointQR`, `deactivateRegistrationQR`) не проверяет принадлежность к организации и держится только на RLS.
-- `getCheckLogs` / `getTodayStats` считают день в UTC.
-- `generateSlug` выкидывает кириллицу: из «Кофейня» получается `-abc123`.
-- `createOrganization` — две записи без транзакции.
+- Часть actions не проверяет принадлежность к организации и держится только на RLS: `toggleEmployeeActive`, `deleteEmployee`, `regenerateOfficePointQR`, `deactivateRegistrationQR`, `getRegistrationQRCodes`, `getTodayStats`, `getEmployeesCount`, `getPendingEmployees`, `getPendingEmployeesCount`, `approvePendingEmployee`, `rejectPendingEmployee`.
+- `deleteOfficePoint` выбирает `organizations!inner(user_id)`, но не сравнивает с `user.id`.
+- `deleteOfficePoint` и `deleteEmployee` удаляют физически вместо `is_active = false`.
+- `getCheckLogs` / `getTodayStats` считают день в UTC.
+- `generateSlug` выкидывает кириллицу: из «Кофейня» получается `-abc123`.
+- `createOrganization` и `approvePendingEmployee` — по две записи без транзакции.
+- `console.error` в actions заявок; ошибки мутаций не показываются в `employees-table.tsx` и `pending-employees.tsx`.
 - `app/menu` — прототип на моках.
 
 ## Процесс
