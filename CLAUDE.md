@@ -78,6 +78,9 @@ pnpm build    # сборка + проверка типов — должна пр
 - `generateSlug` выкидывает кириллицу: из «Кофейня» получается `-abc123`.
 - `createOrganization` и `approvePendingEmployee` — по две записи без транзакции.
 - `console.error` в actions заявок; ошибки мутаций не показываются в `employees-table.tsx` и `pending-employees.tsx`.
+- Ключи `employees-count`, `pending-employees-count`, `today-stats`, `check-logs` — отдельные корни вместо `[сущность, organizationId, ...]`.
+- `use-realtime-logs` подписан на всю таблицу `check_logs` и фильтрует организацию на клиенте.
+- `formData.get(...) as string` в actions.
 - `app/menu` — прототип на моках.
 
 ## Процесс

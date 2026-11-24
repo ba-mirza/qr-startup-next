@@ -86,8 +86,7 @@
 - [ ] Проверка владельца выглядит так же, как в `getEmployees` (`app/dashboard/actions.ts:548`):
       сначала выбрать организацию с `.eq("id", organizationId).eq("user_id", user.id)`, а
       дочернюю сущность получать через `!inner` с фильтром по этой организации.
-      `select(…organizations!inner(user_id))` без сравнения с `user.id` — **не** проверка
-      (так сейчас в `deleteOfficePoint`).
+      `select(…organizations!inner(user_id))` без сравнения с `user.id` — **не** проверка.
 - [ ] Возвращает `{ data, error }` или `{ success, error }`. Наружу не бросает исключений.
       `error` — короткая фраза на русском для пользователя. Сырой `error.message` из
       Supabase пользователю не отдаётся.
@@ -210,32 +209,12 @@ QR-меню. Проверяется в дополнение к §1:
 
 ## 10. Что НЕ считать ошибкой (наследие в `main`)
 
-Не выдавай замечаний за следующее, если PR это не трогает. Если трогает — попроси не чинить
-«попутно», а вынести в отдельный PR. Исключение: PR, задача которого и есть починка.
+Список наследия ведётся в одном месте: [CLAUDE.md](./CLAUDE.md), раздел «Известные проблемы».
+Не пиши замечаний по этим пунктам, если PR их не трогает. Если трогает, попроси не чинить
+«попутно», а вынести в отдельный PR (кроме PR, задача которого и есть починка).
 
-- Мутации и чтения без собственной проверки владельца, держатся только на RLS:
-  `toggleEmployeeActive`, `deleteEmployee`, `regenerateOfficePointQR`,
-  `deactivateRegistrationQR`, `getRegistrationQRCodes`, `getTodayStats`, `getEmployeesCount`,
-  `getPendingEmployees`, `getPendingEmployeesCount`, `approvePendingEmployee`,
-  `rejectPendingEmployee`; в `deleteOfficePoint` `user_id` выбирается, но не сравнивается.
-- Физическое удаление в `deleteOfficePoint` и `deleteEmployee`.
-- День в UTC в `getCheckLogs` и `getTodayStats`.
-- Ручной откат в `createOrganization` и две записи без транзакции в `approvePendingEmployee`.
-- `generateSlug` выкидывает кириллицу.
-- `console.error` и английские описательные комментарии в `app/dashboard/actions.ts`,
-  `hooks/use-realtime-logs.ts`, `components/features/logs/logs-section.tsx`.
-- `formData.get(…) as string` в actions (до перевода форм на объект + Zod).
-- Отдельные корневые ключи `employees-count`, `pending-employees-count`, `today-stats`,
-  `check-logs` вместо `[сущность, organizationId, …]`.
-- Мутации без вывода ошибки в `employees-table.tsx` и `pending-employees.tsx`.
-- Realtime-подписка на всю таблицу `check_logs` с фильтрацией по организации на клиенте.
-- `export default function` в `app/layout.tsx`, `(auth)/*`, `app/menu/page.tsx`,
-  `auth/callback/route.ts`; `function cn` в `lib/utils.ts` (сгенерирован shadcn).
-- `StatCard` внутри `app/dashboard/[orgSlug]/page.tsx` с `text-gray-700`.
-- `app/menu` на моках, отсутствие миграций, `types/database.ts`, `.env.example` и тестов.
-
-«Не считать ошибкой» не значит «можно копировать». Новый код, написанный по этим образцам,
-получает замечание со ссылкой на правильный эталон из §11.
+«Не считать ошибкой» не значит «можно копировать». Новый код, написанный по образцу
+наследия, получает замечание со ссылкой на правильный эталон из §11.
 
 ---
 
@@ -250,7 +229,7 @@ QR-меню. Проверяется в дополнение к §1:
 | Вывод ошибки мутации и `isPending` | `components/features/settings/add-office-point-dialog.tsx:109` |
 | Подтверждение разрушительного действия | `components/features/settings/office-points-list.tsx:165` |
 | Skeleton-состояние | `components/features/employees/employees-section.tsx:77` |
-| Realtime-подписка с cleanup | `hooks/use-realtime-logs.ts` (кроме фильтра, см. §10) |
+| Realtime-подписка с cleanup | `hooks/use-realtime-logs.ts` |
 | Где какой Supabase-клиент | `lib/supabase/server.ts`, `client.ts`, `middleware.ts` |
 | Миграция и RPC | Эталона пока нет. Первая принятая миграция с RLS и RPC станет эталоном, до этого сверяться со скелетом ниже |
 
