@@ -50,7 +50,7 @@ Supabase CLI не используется. Миграции лежат в `supa
 ```
 src/
   app/
-    [locale]/          лендинг, (focus)/ — вход, регистрация, онбординг; dashboard/
+    [locale]/          лендинг, (focus)/ — вход, регистрация, онбординг; dashboard/; q/[token] — вход по QR
     auth/callback/     обмен кода подтверждения email на сессию
     providers.tsx      Mantine, TanStack Query
   proxy.ts             язык, обновление сессии, защита /dashboard и /onboarding
@@ -58,9 +58,9 @@ src/
   shared/              api/supabase, config, lib, ui (тема, общие компоненты), styles
   entities/            organization, module, session
   features/            auth, create-organization, connect-module
-  widgets/             SiteHeader, SiteFooter, Landing, DashboardShell, DashboardOverview, ModuleGate
-  modules/             код модулей (появится с посещаемостью)
-messages/              тексты: ru.json (заполняется сейчас), kk.json, en.json
+  widgets/             SiteHeader, SiteFooter, Landing, DashboardShell, DashboardOverview, ModuleLocked
+  modules/             модули: attendance, feedback, menu + реестр index.ts
+messages/<locale>/     тексты: core.json + <module>.json (заполняется только ru)
 supabase/migrations/   SQL-миграции
 ```
 
@@ -92,6 +92,8 @@ auth.users ─< org_members >─ organizations (tax_id + tax_id_type, slug, time
   посещаемости, экран «Подключить» для закрытых модулей
 
 ## Модули
+
+Как устроен модуль и где его файлы — [CLAUDE.md, «Как сделать модуль»](./CLAUDE.md#как-сделать-модуль).
 
 | Модуль       | Суть                                                         | Статус        |
 | ------------ | ------------------------------------------------------------ | ------------- |

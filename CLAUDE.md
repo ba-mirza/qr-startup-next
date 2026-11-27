@@ -42,11 +42,13 @@ Tailwind и shadcn в проекте не используются.
 - `src/features/<name>` — пользовательское действие: `auth`, `create-organization`,
   `connect-module`. Внутри `api/`, `model/`, `ui/`.
 - `src/widgets/<Name>` — крупный блок экрана: `SiteHeader`, `Landing`, `DashboardShell`.
-- `src/modules/<module>` — код модуля (посещаемость и т.д.) со своими `api`, `model`, `ui`.
-  Ядро (`shared`, `entities`, ядровые `features`/`widgets`) модули не импортирует.
+- `src/modules/<module>` — код модуля со своими `api`, `model`, `ui` и `index.ts` с описанием
+  модуля. Импортирует модули только `src/app` (через реестр `src/modules/index.ts`); `shared`,
+  `entities`, `features`, `widgets` о модулях не знают. Модули не импортируют друг друга.
 - `src/app` — маршруты. Все страницы под `src/app/[locale]/`, кроме `app/auth/callback` и
-  будущих публичных `/q/[token]` и `/api/*`.
-- `src/i18n` — роутинг, навигация, загрузка сообщений. `messages/*.json` — тексты.
+  будущих `/api/*`.
+- `src/i18n` — роутинг, навигация, загрузка сообщений. `messages/<locale>/core.json` — тексты
+  ядра, `messages/<locale>/<module>.json` — тексты модуля.
 
 Компонент — папка `<Name>/` с `<Name>.tsx`, `<Name>.module.sass` и `index.ts`
 (`export { default } from "./Name"`). Компоненты — `default export`, функции и компоненты —
@@ -92,7 +94,7 @@ RPC поднимает исключение со snake_case-кодом (`raise e
    той же миграции. Политики строятся на `public.is_org_member(org, roles)` и
    `public.has_module(org, module)`, не на переданных с клиента id.
 2. **Таблицы модуля** доступны только при подключённом модуле: в политиках
-   `has_module(organization_id, '<module>')`. Экран «Подключить» в UI (`ModuleGate`) — это
+   `has_module(organization_id, '<module>')`. Экран «Подключить» в UI (`ModuleLocked`) — это
    UX, не защита.
 3. **Роли.** Владелец управляет организацией. Кассир работает только на своей точке и только
    в своём экране модуля.
@@ -112,8 +114,9 @@ RPC поднимает исключение со snake_case-кодом (`raise e
 - Миграцию перед коммитом прогнать на пустой базе (локальный Postgres с заглушкой схемы
   `auth` подходит).
 - Смерженные миграции не редактировать, только новые поверх.
-- `src/shared/api/supabase/database.types.ts` пишется вручную в формате `supabase gen types`.
-  Меняешь схему — обнови типы в том же PR.
+- Типы БД пишутся вручную в формате `supabase gen types`: ядро — `src/shared/api/supabase/schema/core.ts`,
+  модуль — `schema/<module>.ts`. `database.types.ts` только собирает их. Меняешь схему —
+  обнови свой файл схемы в том же PR.
 - Имена: `snake_case`, таблицы во множественном числе, у каждой `created_at timestamptz`.
 - Таблицы модулей с префиксом: `attendance_*`, `feedback_*`, `menu_*`, `bonus_*`.
 - Поля, нужные только модулю, — в таблице профиля модуля (`attendance_settings` и т.п.), а не
@@ -140,12 +143,66 @@ RPC поднимает исключение со snake_case-кодом (`raise e
 
 - `next-intl`, локали `ru | kk | en`, по умолчанию `ru` без префикса, язык браузера не
   определяется.
-- Строки только в `messages/*.json`, в коде — `useTranslations` / `getTranslations`.
-- **Пока заполняем только `messages/ru.json`.** Переводы `kk` и `en` — одним проходом перед
-  запуском; недостающие ключи берутся из `ru` (`src/i18n/request.ts`).
+- Строки только в `messages/<locale>/*.json`, в коде — `useTranslations` / `getTranslations`.
+  Тексты модуля лежат под его ключом: `useTranslations("menu.home")`.
+- **Пока заполняем только `messages/ru/`.** Переводы `kk` и `en` — одним проходом перед
+  запуском; недостающие ключи и файлы берутся из `ru` (`src/i18n/request.ts`).
 - Навигация — только `Link`, `redirect`, `useRouter`, `usePathname` из `@/i18n/navigation`.
 - В серверных страницах: `toLocale(params.locale)` и `setRequestLocale(locale)` до рендера.
 - Сообщения Zod — ключи переводов (`"emailInvalid"`), перевод в UI.
+
+## Как сделать модуль
+
+Ядро уже даёт: каталог и подключение (`modules`, `org_modules`), проверку подключения
+(`has_module`), точки и QR (`points`, `qr_codes`), маршруты кабинета и публичный вход по QR.
+Модуль занимает только свои файлы:
+
+| Что | Где |
+| --- | --- |
+| Код | `src/modules/<module>/` — `index.ts`, `api/`, `model/`, `ui/` |
+| Описание модуля | `src/modules/<module>/index.ts` → `ModuleDefinition` (`src/shared/lib/module-contract.ts`) |
+| Тексты | `messages/ru/<module>.json` (`nav.<segment>` — подписи пунктов меню) |
+| Миграции | `supabase/migrations/<timestamp>_<module>_<name>.sql`, таблицы `<module>_*` |
+| Типы БД | `src/shared/api/supabase/schema/<module>.ts` |
+
+`ModuleDefinition`:
+
+- `nav` — сегменты пунктов меню в кабинете (`["home", "items"]`), `"home"` — главная модуля.
+- `pages` — страница на каждый сегмент: `/dashboard/[orgSlug]/<module>/<segment>/...rest`.
+  Страница получает `organization` и `rest`. Маршрут уже проверил, что модуль подключён.
+- `publicPage` — гостевая страница по QR: `/q/<token>`. `resolve_qr()` уже проверил QR и
+  подключение модуля; данные страница получает своей RPC по `token`.
+
+Правила модуля:
+
+- Политики таблиц модуля: `is_org_member(organization_id)` **и** `has_module(organization_id, '<module>')`.
+- Анонимы — только через RPC модуля `<module>_*` (скелет в REVIEW.md §11).
+- QR модуля: строка в `qr_codes` с `module = '<module>'` и своим `purpose` (`table`, `check_in`).
+- Поля организации, нужные модулю, — в его таблице профиля (`menu_venues`), а не в `organizations`.
+- Файлы ядра модуль не правит: `src/shared` (кроме своего `schema/<module>.ts`), `src/entities`,
+  `src/app`, `messages/ru/core.json`, миграции `*_core*`. Нужно изменение ядра — отдельный PR.
+
+Включить модуль организации при разработке (Supabase → SQL Editor, роль postgres):
+
+```sql
+insert into public.org_modules (organization_id, module, status)
+select id, 'menu', 'active' from public.organizations where slug = '<slug>'
+on conflict (organization_id, module) do update set status = 'active', active_until = null;
+```
+
+Выпустить тестовый QR модуля (ссылка — `http://localhost:3000/q/<token>`):
+
+```sql
+insert into public.qr_codes (organization_id, point_id, module, purpose)
+select o.id, p.id, 'menu', 'table'
+from public.organizations o join public.points p on p.organization_id = o.id and p.is_main
+where o.slug = '<slug>'
+returning token;
+```
+
+Новый модуль целиком (как `bonus`): строка в `modules` (миграция), ключ в
+`shared/config/site.ts`, файл схемы в `database.types.ts`, файл текстов в `src/i18n/messages.ts`,
+запись в реестре `src/modules/index.ts`. Это изменение ядра — отдельным PR.
 
 ## Формы
 
@@ -163,11 +220,15 @@ RPC поднимает исключение со snake_case-кодом (`raise e
 ## Известные проблемы
 
 - `database.types.ts` пишется вручную и может разойтись со схемой: сверяй при каждой миграции.
+- `NextIntlClientProvider` отдаёт в браузер все тексты сразу. Пока их мало, это не важно;
+  когда разрастутся, передавать клиенту только нужные namespace.
 - Ошибки RPC распознаются по тексту исключения (`error.message`). Коды держать в
   snake_case и не менять без правки маппинга в API сущности.
 
 ## Процесс
 
+- Владелец модуля работает в своих файлах (раздел «Как сделать модуль»). Изменения ядра —
+  отдельные PR, о них договариваемся заранее, чтобы не конфликтовать.
 - Одна задача — одна ветка — один PR. Ветки `feat/`, `fix/`, `refactor/`, `chore/`.
 - Коммиты на английском, в повелительном наклонении: `feat: …`, `fix: …`, `refactor: …`,
   `chore: …`.
