@@ -1,0 +1,19 @@
+@use "variables" as *
+
+@mixin from($bp)
+  @media (min-width: $bp)
+    @content
+
+@mixin until($bp)
+  @media (max-width: calc(#{$bp} - 0.0625em))
+    @content
+
+// Тема Mantine выставляет data-mantine-color-scheme на <html>.
+@mixin dark
+  [data-mantine-color-scheme="dark"] &
+    @content
+
+@mixin hover
+  @media (hover: hover)
+    &:hover
+      @content

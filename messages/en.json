@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "description": "QR in everywhere: attendance, feedback, menus and loyalty bonuses for business with a single QR code."
+  },
+  "landing": {
+    "tagline": "QR in everywhere",
+    "title": "One QR code, many business tasks",
+    "subtitle": "Turn on only the modules you need: staff attendance, feedback, menus and customer bonuses.",
+    "login": "Log in",
+    "register": "Start for free"
+  }
+}
