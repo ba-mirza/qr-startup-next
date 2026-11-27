@@ -13,6 +13,8 @@ export const useOrganizationModulesQuery = (organizationId: string) =>
   useQuery({
     queryKey: moduleQueryKeys.forOrganization(organizationId),
     queryFn: () => moduleApi.listForOrganization(getSupabase(), organizationId),
+    // Пока организация не загружена, id пустой: без запроса с невалидным uuid.
+    enabled: Boolean(organizationId),
     ...queryCacheConfig.dashboard,
   });
 
