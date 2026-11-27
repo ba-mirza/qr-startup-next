@@ -18,8 +18,8 @@
    блокер. Ошибки и предупреждения `lint` (включая React Compiler) — замечание. Тестов в
    проекте нет: не требуй их.
 3. Если в PR есть миграция: она применяется на пустой базе после предыдущих миграций
-   (локальный Postgres с заглушкой схемы `auth` или чистый dev-проект), а
-   `database.types.ts` обновлён в том же PR.
+   (локальный Postgres с заглушкой схемы `auth` или чистый dev-проект), а файл схемы в
+   `src/shared/api/supabase/schema/` обновлён в том же PR.
 4. Пройди чек-листы §1–9. Каждое замечание: `файл:строка`, нарушенное правило и **образец из
    репо** (эталоны в §11).
 5. Сверься с §10, чтобы не писать замечания по известным проблемам.
@@ -40,12 +40,13 @@
 | 1.5  | Аноним читает или пишет таблицу напрямую: политика `to anon` на данных организации, `grant … on table … to anon` | `grep -niE "to anon\|grant .* to anon" supabase/migrations` | Анонимы — только через RPC (CLAUDE.md, п. 4). Исключение — каталог `modules` |
 | 1.6  | RPC без `security definer` / `set search_path = ''`, без валидации входа, без `revoke execute … from public, anon` | Прочитать каждую `create function` | Подмена объектов через `search_path`, открытый вызов функции |
 | 1.7  | `service_role`, secret-ключ, токены, пароли в коде или `.env*` в диффе | `grep -rnE "service_role\|SERVICE_ROLE\|sb_secret\|eyJhbGci" src supabase` и `git diff --name-only main... \| grep env` | CLAUDE.md, п. 6 |
-| 1.8  | Схема меняется без миграции, или миграция есть, а `database.types.ts` не обновлён | Сравнить новые имена в `.from(…)` / `.rpc(…)` с диффом миграций и типов | Dev расходится с prod, типы врут |
+| 1.8  | Схема меняется без миграции, или миграция есть, а файл в `schema/` не обновлён | Сравнить новые имена в `.from(…)` / `.rpc(…)` с диффом миграций и типов | Dev расходится с prod, типы врут |
 | 1.9  | Отредактирована уже смерженная миграция | `git diff --name-status main... -- supabase/migrations \| grep -v "^A"` | Только новые миграции поверх |
 | 1.10 | Публичный эндпоинт (скан, опрос, регистрация по QR, вход кассира) без проверки токена, `expires_at`, `is_active` и без защиты от перебора и повторов | Прочитать RPC или route целиком | Подделка отметок, перебор PIN |
 | 1.11 | `any`, `@ts-ignore`, `as unknown as` | `grep -rnE ": any\b\|as any\|@ts-ignore\|as unknown as" src` | Strict-режим |
 | 1.12 | `getSupabase()` в серверном коде или `createServerSupabase()` в `"use client"` | `grep -rln "use client" src \| xargs grep -l "supabase/server"`; `grep -rn "getSupabase" src/app --include=route.ts` | Сессия и куки ломаются |
-| 1.13 | Ядро импортирует модуль: `shared`, `entities`, ядровые `features`/`widgets` → `@/modules/*` | `grep -rn "@/modules/" src/shared src/entities src/features src/widgets` | Модуль зависит от ядра, не наоборот |
+| 1.13 | Модуль импортируют не из `src/app`, или модуль импортирует другой модуль | `grep -rn "@/modules" src/shared src/entities src/features src/widgets`; `grep -rnE "@/modules/(attendance\|feedback\|menu)" src/modules` | Модуль зависит от ядра, не наоборот; модули независимы |
+| 1.15 | PR модуля правит файлы ядра: `src/shared` (кроме своего `schema/<module>.ts`), `src/entities`, `src/app`, `messages/ru/core.json`, миграции `*_core*` | `git diff --name-only main...` | Изменения ядра — отдельным PR (CLAUDE.md «Как сделать модуль») |
 | 1.14 | Open redirect: `?next=` / `redirect_to` без проверки на внутренний путь | Прочитать route handlers | Фишинг через наш домен |
 
 ---
@@ -121,8 +122,9 @@
 
 ## 6. Тексты и i18n
 
-- [ ] Строк в коде нет: всё в `messages/ru.json`, в компонентах `useTranslations`.
-- [ ] Новые ключи добавлены в `ru.json`. Отсутствие в `kk.json` / `en.json` **не** замечание:
+- [ ] Строк в коде нет: всё в `messages/ru/*.json`, в компонентах `useTranslations`. Тексты
+      модуля — в `messages/ru/<module>.json`.
+- [ ] Новые ключи добавлены в `messages/ru/`. Отсутствие в `kk` / `en` **не** замечание:
       переводы делаются перед запуском.
 - [ ] Навигация из `@/i18n/navigation`, не из `next/link` / `next/navigation` (кроме
       `notFound`).
@@ -135,7 +137,7 @@
 - [ ] Ветка `feat/…`, `fix/…`, `refactor/…`, `chore/…` от свежего `main`.
 - [ ] Коммиты на английском, повелительное наклонение, префикс `feat:` / `fix:` /
       `refactor:` / `chore:`.
-- [ ] PR до ~400 строк без учёта `pnpm-lock.yaml` и `messages/*.json`. Больше — разбить.
+- [ ] PR до ~400 строк без учёта `pnpm-lock.yaml` и `messages/`. Больше — разбить.
 - [ ] В диффе нет постороннего: попутных рефакторингов, `.env*`, `.next`. `pnpm-lock.yaml`
       меняется только вместе с `package.json`.
 - [ ] Новая зависимость обоснована, аналога нет (уже есть: Mantine, TanStack Query, zustand,
@@ -169,7 +171,8 @@
 - [ ] Повтор и перебор защищены: уникальный индекс, лимит по устройству, блокировка PIN после
       N попыток.
 - [ ] Геолокация проверяется в функции по радиусу, а не только в браузере.
-- [ ] Маршрут исключён из `matcher` в `src/proxy.ts`, если не нуждается в языке и сессии.
+- [ ] Гостевая страница модуля — `publicPage` в его `ModuleDefinition`, а не свой маршрут:
+      вход только через `/q/[token]`.
 
 ---
 
@@ -192,7 +195,9 @@
 | SSR prefetch + `HydrationBoundary` | `src/app/[locale]/dashboard/[orgSlug]/layout.tsx` |
 | Форма: react-hook-form + Zod + Mantine, ключ ошибки → перевод | `src/features/create-organization/`, `src/features/auth/ui/LoginForm/` |
 | Виджет с Sass Modules по БЭМ | `src/widgets/SiteHeader/` |
-| Экран закрытого модуля | `src/widgets/ModuleGate/` |
+| Экран закрытого модуля | `src/widgets/ModuleLocked/` |
+| Контракт модуля и реестр | `src/shared/lib/module-contract.ts`, `src/modules/index.ts`, `src/modules/menu/index.ts` |
+| Публичный вход по QR | `src/app/[locale]/q/[token]/page.tsx`, `resolve_qr` в `20261127000003_core_resolve_qr.sql` |
 | Supabase-клиенты | `src/shared/api/supabase/client.ts`, `server.ts`, `proxy.ts` |
 | Proxy: язык, сессия, защита маршрутов | `src/proxy.ts` |
 | Безопасный редирект `?next=` | `src/app/auth/callback/route.ts` |

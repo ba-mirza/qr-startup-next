@@ -1,6 +1,15 @@
 "use client";
 
-import { AppShell, Badge, Burger, Group, NavLink, ScrollArea, Text, UnstyledButton } from "@mantine/core";
+import {
+  AppShell,
+  Badge,
+  Burger,
+  Group,
+  NavLink,
+  ScrollArea,
+  Text,
+  UnstyledButton,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { LayoutDashboard, Lock, LogOut, Puzzle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -10,14 +19,17 @@ import { useOrganizationModulesQuery } from "@/entities/module";
 import { useOrganizationQuery } from "@/entities/organization";
 import { useSignOutMutation } from "@/features/auth";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import type { ModuleKey } from "@/shared/config/site";
 import Logo from "@/shared/ui/Logo";
 import ModuleIcon from "@/shared/ui/ModuleIcon";
 
 import styles from "./DashboardShell.module.sass";
 
-type Props = { slug: string; email: string | null; children: ReactNode };
+export type ModuleNav = Partial<Record<ModuleKey, { segment: string; label: string }[]>>;
 
-const DashboardShell = ({ slug, email, children }: Props) => {
+type Props = { slug: string; email: string | null; moduleNav: ModuleNav; children: ReactNode };
+
+const DashboardShell = ({ slug, email, moduleNav, children }: Props) => {
   const t = useTranslations("dashboard.nav");
   const tModules = useTranslations("landing.modules");
   const pathname = usePathname();
@@ -93,20 +105,57 @@ const DashboardShell = ({ slug, email, children }: Props) => {
               </Badge>
             );
 
+            const subItems = module.isActive ? (moduleNav[module.key] ?? []) : [];
+            const insideModule = pathname === href || pathname.startsWith(`${href}/`);
+
+            // Один пункт «home» — модуль без подменю.
+            if (subItems.length <= 1) {
+              return (
+                <NavLink
+                  key={module.key}
+                  component={Link}
+                  href={href}
+                  label={tModules(`${module.key}.title`)}
+                  leftSection={
+                    module.isActive ? (
+                      <ModuleIcon module={module.key} size={18} />
+                    ) : (
+                      <Lock size={16} />
+                    )
+                  }
+                  rightSection={right}
+                  active={insideModule}
+                  className={module.isActive ? undefined : styles["shell__link--locked"]}
+                  onClick={close}
+                />
+              );
+            }
+
             return (
               <NavLink
                 key={module.key}
-                component={Link}
-                href={href}
                 label={tModules(`${module.key}.title`)}
-                leftSection={
-                  module.isActive ? <ModuleIcon module={module.key} size={18} /> : <Lock size={16} />
-                }
-                rightSection={right}
-                active={pathname.startsWith(href)}
-                className={module.isActive ? undefined : styles["shell__link--locked"]}
-                onClick={close}
-              />
+                leftSection={<ModuleIcon module={module.key} size={18} />}
+                defaultOpened={insideModule}
+              >
+                {subItems.map(({ segment, label }) => {
+                  const subHref = segment === "home" ? href : `${href}/${segment}`;
+                  return (
+                    <NavLink
+                      key={segment}
+                      component={Link}
+                      href={subHref}
+                      label={label}
+                      active={
+                        segment === "home"
+                          ? pathname === href
+                          : pathname === subHref || pathname.startsWith(`${subHref}/`)
+                      }
+                      onClick={close}
+                    />
+                  );
+                })}
+              </NavLink>
             );
           })}
         </ScrollArea>
