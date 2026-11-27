@@ -149,5 +149,72 @@
       "unknown": "Something went wrong. Please try again."
     },
     "backHome": "Back to home"
+  },
+  "onboarding": {
+    "title": "Your organization",
+    "subtitle": "Step 1 of 2. Next you will pick modules.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "For example, Samal Coffee",
+      "taxIdType": "Legal form",
+      "bin": "Company (BIN)",
+      "iin": "Sole proprietor (IIN)",
+      "taxIdBin": "BIN",
+      "taxIdIin": "IIN",
+      "taxIdHint": "12 digits"
+    },
+    "submit": "Create organization",
+    "errors": {
+      "nameShort": "Enter a name from 2 to 120 characters",
+      "invalidTaxId": "The number failed the check digit validation",
+      "taxIdTaken": "An organization with this number is already registered",
+      "invalidName": "Enter a name from 2 to 120 characters",
+      "unknown": "Could not create the organization. Please try again."
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "core": "Organization",
+      "overview": "Overview",
+      "catalog": "Modules",
+      "modules": "Connected modules",
+      "connect": "Connect",
+      "soon": "soon",
+      "signOut": "Log out",
+      "openMenu": "Menu"
+    },
+    "overview": {
+      "title": "Overview",
+      "welcome": "Welcome to {name}",
+      "noModules": "No modules are connected yet. Start with the attendance free trial.",
+      "toCatalog": "Open module catalog",
+      "activeUntil": "active until {date}",
+      "activeForever": "active"
+    },
+    "catalog": {
+      "title": "Modules",
+      "subtitle": "Connect modules separately. Monthly payment per module.",
+      "active": "Connected",
+      "activeUntil": "Active until {date}",
+      "soon": "Coming soon",
+      "trialDays": "{days} days free",
+      "startTrial": "Try for free",
+      "trialUsed": "Free trial already used",
+      "open": "Open",
+      "paymentSoon": "Payment is coming soon",
+      "trialStarted": "Free trial started",
+      "errors": {
+        "trialAlreadyUsed": "The free trial has already been used",
+        "trialNotAvailable": "This module has no free trial",
+        "forbidden": "Only the owner can connect modules",
+        "unknown": "Could not connect the module"
+      }
+    },
+    "module": {
+      "lockedTitle": "The {name} module is not connected",
+      "lockedText": "Connect the module to use it in this organization.",
+      "toCatalog": "Go to connect",
+      "inProgress": "The module is connected. Its screens will arrive in the next update."
+    }
   }
 }
