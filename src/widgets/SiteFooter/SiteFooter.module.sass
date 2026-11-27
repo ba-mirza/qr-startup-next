@@ -1,0 +1,37 @@
+@use "@/shared/styles/mixins" as *
+
+.footer
+  padding: 56px 0 32px
+  color: var(--mantine-color-gray-4)
+  background: var(--mantine-color-dark-8)
+
+  &__description
+    max-width: 420px
+    margin: 16px 0 8px
+
+  &__muted
+    color: var(--mantine-color-gray-6)
+
+  &__heading
+    margin-bottom: 12px
+    color: var(--mantine-color-white)
+
+  &__list
+    display: flex
+    flex-direction: column
+    gap: 8px
+    margin: 0
+    padding: 0
+    list-style: none
+
+  &__link
+    font-size: 14px
+    transition: color 150ms ease
+
+    @include hover
+      color: var(--mantine-color-white)
+
+  &__bottom
+    margin-top: 48px
+    padding-top: 24px
+    border-top: 1px solid var(--mantine-color-dark-5)

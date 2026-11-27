@@ -1,0 +1,220 @@
+{
+  "meta": {
+    "description": "QR in everywhere: attendance, feedback, menus and loyalty bonuses for business with a single QR code."
+  },
+  "header": {
+    "nav": {
+      "modules": "Modules",
+      "how": "How it works",
+      "pricing": "Pricing",
+      "about": "About"
+    },
+    "login": "Log in",
+    "register": "Start for free",
+    "dashboard": "Dashboard",
+    "openMenu": "Open menu",
+    "language": "Language"
+  },
+  "landing": {
+    "hero": {
+      "badge": "QR in everywhere",
+      "titleStart": "One QR code,",
+      "titleAccent": "many business tasks",
+      "subtitle": "KasipQR is a platform for businesses in Kazakhstan. Turn on only the modules you need: staff attendance, guest feedback, QR menus and customer bonuses.",
+      "register": "Start for free",
+      "login": "Log in",
+      "points": {
+        "anyBusiness": "For any business",
+        "trial": "14-day free trial for attendance",
+        "noHardware": "No hardware: just a QR code"
+      }
+    },
+    "modules": {
+      "title": "Modules for your tasks",
+      "subtitle": "Each module is connected separately. Pay only for what you use.",
+      "available": "Available",
+      "soon": "Coming soon",
+      "attendance": {
+        "title": "Attendance",
+        "description": "Staff check in and out by scanning the location QR. Live log, geolocation check, automatic day close."
+      },
+      "feedback": {
+        "title": "Feedback",
+        "description": "Guests leave anonymous feedback via a QR on the table or counter. Statistics for every location."
+      },
+      "menu": {
+        "title": "Menu",
+        "description": "QR menus for cafes and restaurants, plus calling a waiter to the table."
+      },
+      "bonus": {
+        "title": "Bonuses",
+        "description": "A loyalty program without cards: the cashier finds a customer by phone number, adds and redeems bonuses."
+      }
+    },
+    "how": {
+      "title": "How it works",
+      "subtitle": "From sign-up to the first scan in a few minutes.",
+      "steps": {
+        "register": {
+          "title": "Sign up",
+          "description": "Create an account and add your organization: a company by BIN or a sole proprietor by IIN."
+        },
+        "module": {
+          "title": "Pick a module",
+          "description": "Connect the module you need. Attendance can be tried for free."
+        },
+        "print": {
+          "title": "Print the QR",
+          "description": "Print the location QR code and place it at the entrance, counter or table."
+        },
+        "work": {
+          "title": "Get to work",
+          "description": "Staff and customers scan the QR, and you see everything in the dashboard."
+        }
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Monthly payment per module. Prices will be announced when modules launch.",
+      "trial": "14 days free",
+      "soon": "Coming soon",
+      "perMonth": "per module per month",
+      "attendanceNote": "Try it for free, then pay monthly.",
+      "soonNote": "The module is in development. We will let you know when it can be connected.",
+      "start": "Try it",
+      "notify": "Coming soon"
+    },
+    "about": {
+      "title": "About",
+      "lead": "KasipQR is built by the today.development team from Atyrau.",
+      "text": "We build simple QR-based tools for business. One dashboard, one set of locations and QR codes, and modules do the work: attendance today, feedback, menus and bonuses tomorrow.",
+      "values": {
+        "mission": {
+          "title": "Mission",
+          "description": "Simplify everyday business processes: tracking, feedback and loyalty."
+        },
+        "approach": {
+          "title": "Approach",
+          "description": "No training and no hardware: a phone and a printed QR are enough."
+        },
+        "vision": {
+          "title": "Vision",
+          "description": "QR in everywhere: one platform where each business connects exactly what it needs."
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "Built by today.development. A QR-based platform for business: attendance, feedback, menus and bonuses.",
+    "location": "Atyrau, Kazakhstan",
+    "product": "Product",
+    "legal": "Legal",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "rights": "All rights reserved."
+  },
+  "auth": {
+    "login": {
+      "title": "Log in to KasipQR",
+      "subtitle": "Log in to manage your organization and modules.",
+      "submit": "Log in",
+      "noAccount": "No account?",
+      "toRegister": "Sign up"
+    },
+    "register": {
+      "title": "Sign up",
+      "subtitle": "Create an account — you will add your organization and modules next.",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "toLogin": "Log in",
+      "checkEmailTitle": "Confirm your email",
+      "checkEmailText": "We sent an email to {email}. Follow the link in it to finish signing up."
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordConfirm": "Repeat password",
+      "passwordHint": "At least 8 characters"
+    },
+    "errors": {
+      "emailInvalid": "Enter a valid email",
+      "passwordShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "invalidCredentials": "Wrong email or password",
+      "emailNotConfirmed": "Email is not confirmed. Check your inbox.",
+      "userExists": "A user with this email already exists",
+      "weakPassword": "Password is too weak",
+      "rateLimit": "Too many attempts. Try again later.",
+      "callback": "The link is invalid or expired. Please log in again.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "backHome": "Back to home"
+  },
+  "onboarding": {
+    "title": "Your organization",
+    "subtitle": "Step 1 of 2. Next you will pick modules.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "For example, Samal Coffee",
+      "taxIdType": "Legal form",
+      "bin": "Company (BIN)",
+      "iin": "Sole proprietor (IIN)",
+      "taxIdBin": "BIN",
+      "taxIdIin": "IIN",
+      "taxIdHint": "12 digits"
+    },
+    "submit": "Create organization",
+    "errors": {
+      "nameShort": "Enter a name from 2 to 120 characters",
+      "invalidTaxId": "The number failed the check digit validation",
+      "taxIdTaken": "An organization with this number is already registered",
+      "invalidName": "Enter a name from 2 to 120 characters",
+      "unknown": "Could not create the organization. Please try again."
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "core": "Organization",
+      "overview": "Overview",
+      "catalog": "Modules",
+      "modules": "Connected modules",
+      "connect": "Connect",
+      "soon": "soon",
+      "signOut": "Log out",
+      "openMenu": "Menu"
+    },
+    "overview": {
+      "title": "Overview",
+      "welcome": "Welcome to {name}",
+      "noModules": "No modules are connected yet. Start with the attendance free trial.",
+      "toCatalog": "Open module catalog",
+      "activeUntil": "active until {date}",
+      "activeForever": "active"
+    },
+    "catalog": {
+      "title": "Modules",
+      "subtitle": "Connect modules separately. Monthly payment per module.",
+      "active": "Connected",
+      "activeUntil": "Active until {date}",
+      "soon": "Coming soon",
+      "trialDays": "{days} days free",
+      "startTrial": "Try for free",
+      "trialUsed": "Free trial already used",
+      "open": "Open",
+      "paymentSoon": "Payment is coming soon",
+      "trialStarted": "Free trial started",
+      "errors": {
+        "trialAlreadyUsed": "The free trial has already been used",
+        "trialNotAvailable": "This module has no free trial",
+        "forbidden": "Only the owner can connect modules",
+        "unknown": "Could not connect the module"
+      }
+    },
+    "module": {
+      "lockedTitle": "The {name} module is not connected",
+      "lockedText": "Connect the module to use it in this organization.",
+      "toCatalog": "Go to connect",
+      "inProgress": "The module is connected. Its screens will arrive in the next update."
+    }
+  }
+}
