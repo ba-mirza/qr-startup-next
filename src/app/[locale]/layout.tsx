@@ -32,11 +32,15 @@ const LocaleLayout = async ({ children, params }: Props) => {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} {...mantineHtmlProps}>
+    <html
+      lang={locale}
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      {...mantineHtmlProps}
+    >
       <head>
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
         <NextIntlClientProvider>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>

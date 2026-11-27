@@ -1,0 +1,38 @@
+@use "@/shared/styles/mixins" as *
+
+.modules
+  padding: 96px 0
+  background: var(--mantine-color-gray-0)
+  scroll-margin-top: 64px
+
+  &__card
+    height: 100%
+    padding: 28px
+    border-radius: 16px
+    background: var(--mantine-color-white)
+    border: 1px solid var(--mantine-color-gray-2)
+    transition: border-color 200ms ease, box-shadow 200ms ease
+
+    @include hover
+      border-color: var(--mantine-color-brand-2)
+      box-shadow: 0 16px 40px -16px rgba(220, 38, 38, 0.2)
+
+  &__top
+    display: flex
+    align-items: center
+    justify-content: space-between
+    margin-bottom: 20px
+
+  &__icon
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    width: 48px
+    height: 48px
+    border-radius: 12px
+    color: var(--mantine-color-brand-6)
+    background: var(--mantine-color-brand-0)
+
+  &__title
+    margin-bottom: 8px
+    font-size: 20px

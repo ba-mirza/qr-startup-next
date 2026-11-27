@@ -5,7 +5,8 @@ import type { ComponentProps } from "react";
 
 import { Link } from "@/i18n/navigation";
 
-type Props = ButtonProps & Pick<ComponentProps<typeof Link>, "href">;
+type Props = ButtonProps &
+  Pick<ComponentProps<typeof Link>, "href" | "onClick" | "aria-label" | "target">;
 
 // Button c навигацией next-intl. Отдельный клиентский компонент: из RSC нельзя
 // передать Link в проп component.

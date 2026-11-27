@@ -1,0 +1,18 @@
+@use "@/shared/styles/variables" as *
+@use "@/shared/styles/mixins" as *
+
+.heading
+  max-width: 680px
+  margin: 0 auto 48px
+  text-align: center
+
+  &__title
+    margin-bottom: 12px
+    font-size: 30px
+    letter-spacing: -0.02em
+
+    @include from($bp-sm)
+      font-size: 38px
+
+  &__subtitle
+    line-height: 1.6

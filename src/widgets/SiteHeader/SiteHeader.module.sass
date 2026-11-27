@@ -1,0 +1,54 @@
+@use "@/shared/styles/variables" as *
+@use "@/shared/styles/mixins" as *
+
+.header
+  position: fixed
+  inset: 0 0 auto
+  z-index: 100
+  border-bottom: 1px solid transparent
+  transition: background-color 200ms ease, border-color 200ms ease, backdrop-filter 200ms ease
+
+  &--scrolled
+    background: rgba(255, 255, 255, 0.85)
+    border-bottom-color: var(--mantine-color-gray-2)
+    backdrop-filter: blur(12px)
+
+  &__inner
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 24px
+    height: $header-height
+
+  &__nav
+    display: none
+    gap: 32px
+
+    @include from($bp-md)
+      display: flex
+
+  &__link
+    display: block
+    padding: 8px 0
+    font-size: 15px
+    font-weight: 500
+    color: var(--mantine-color-gray-7)
+    transition: color 150ms ease
+
+    @include hover
+      color: var(--mantine-color-brand-6)
+
+  &__actions
+    display: flex
+    align-items: center
+    gap: 8px
+
+  &__auth
+    display: none
+
+    @include from($bp-md)
+      display: block
+
+  &__burger
+    @include from($bp-md)
+      display: none

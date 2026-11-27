@@ -2,11 +2,115 @@
   "meta": {
     "description": "QR in everywhere: attendance, feedback, menus and loyalty bonuses for business with a single QR code."
   },
-  "landing": {
-    "tagline": "QR in everywhere",
-    "title": "One QR code, many business tasks",
-    "subtitle": "Turn on only the modules you need: staff attendance, feedback, menus and customer bonuses.",
+  "header": {
+    "nav": {
+      "modules": "Modules",
+      "how": "How it works",
+      "pricing": "Pricing",
+      "about": "About"
+    },
     "login": "Log in",
-    "register": "Start for free"
+    "register": "Start for free",
+    "dashboard": "Dashboard",
+    "openMenu": "Open menu",
+    "language": "Language"
+  },
+  "landing": {
+    "hero": {
+      "badge": "QR in everywhere",
+      "titleStart": "One QR code,",
+      "titleAccent": "many business tasks",
+      "subtitle": "KasipQR is a platform for businesses in Kazakhstan. Turn on only the modules you need: staff attendance, guest feedback, QR menus and customer bonuses.",
+      "register": "Start for free",
+      "login": "Log in",
+      "points": {
+        "anyBusiness": "For any business",
+        "trial": "14-day free trial for attendance",
+        "noHardware": "No hardware: just a QR code"
+      }
+    },
+    "modules": {
+      "title": "Modules for your tasks",
+      "subtitle": "Each module is connected separately. Pay only for what you use.",
+      "available": "Available",
+      "soon": "Coming soon",
+      "attendance": {
+        "title": "Attendance",
+        "description": "Staff check in and out by scanning the location QR. Live log, geolocation check, automatic day close."
+      },
+      "feedback": {
+        "title": "Feedback",
+        "description": "Guests leave anonymous feedback via a QR on the table or counter. Statistics for every location."
+      },
+      "menu": {
+        "title": "Menu",
+        "description": "QR menus for cafes and restaurants, plus calling a waiter to the table."
+      },
+      "bonus": {
+        "title": "Bonuses",
+        "description": "A loyalty program without cards: the cashier finds a customer by phone number, adds and redeems bonuses."
+      }
+    },
+    "how": {
+      "title": "How it works",
+      "subtitle": "From sign-up to the first scan in a few minutes.",
+      "steps": {
+        "register": {
+          "title": "Sign up",
+          "description": "Create an account and add your organization: a company by BIN or a sole proprietor by IIN."
+        },
+        "module": {
+          "title": "Pick a module",
+          "description": "Connect the module you need. Attendance can be tried for free."
+        },
+        "print": {
+          "title": "Print the QR",
+          "description": "Print the location QR code and place it at the entrance, counter or table."
+        },
+        "work": {
+          "title": "Get to work",
+          "description": "Staff and customers scan the QR, and you see everything in the dashboard."
+        }
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Monthly payment per module. Prices will be announced when modules launch.",
+      "trial": "14 days free",
+      "soon": "Coming soon",
+      "perMonth": "per module per month",
+      "attendanceNote": "Try it for free, then pay monthly.",
+      "soonNote": "The module is in development. We will let you know when it can be connected.",
+      "start": "Try it",
+      "notify": "Coming soon"
+    },
+    "about": {
+      "title": "About",
+      "lead": "KasipQR is built by the today.development team from Atyrau.",
+      "text": "We build simple QR-based tools for business. One dashboard, one set of locations and QR codes, and modules do the work: attendance today, feedback, menus and bonuses tomorrow.",
+      "values": {
+        "mission": {
+          "title": "Mission",
+          "description": "Simplify everyday business processes: tracking, feedback and loyalty."
+        },
+        "approach": {
+          "title": "Approach",
+          "description": "No training and no hardware: a phone and a printed QR are enough."
+        },
+        "vision": {
+          "title": "Vision",
+          "description": "QR in everywhere: one platform where each business connects exactly what it needs."
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "Built by today.development. A QR-based platform for business: attendance, feedback, menus and bonuses.",
+    "location": "Atyrau, Kazakhstan",
+    "product": "Product",
+    "legal": "Legal",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "rights": "All rights reserved."
   }
 }
